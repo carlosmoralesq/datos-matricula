@@ -10,4 +10,3 @@ The repository is structured this way:
 
 - [data](data): Data used for computations and analysis.
 - [scripts](scripts): `R` scripts used to import and process data.
-- [output](output): End-user products like reports, figures, tables and others.
