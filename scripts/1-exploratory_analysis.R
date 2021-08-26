@@ -16,7 +16,7 @@ data <- readRDS(file = "data/data.RDS")
 
 # Estadísticos descriptivos -------------------------------------------------------------------
 
-summary(data) # Descriptivos básicos por variable
+resultados <- summary(data) # Descriptivos básicos por variable
 
 # # Con la función 'summary' obtenemos estadísticos descriptivos basados posición (cuartiles), así como la media aritmética (sólo cuando el primer argumento es un data.frame).
 
@@ -27,21 +27,24 @@ plot(data) # Graficamos los datos con 'base R'
 
 # Exploración gráfica con ggplot2 -------------------------------------------------------------
 
+temp <- melt(data, measure.vars = c("matricula_coanil", "matricula_pie")) 
+
 # 1. Distribución de la edad de los alumnos agrupado por región
-ggplot(data, aes(x = region, y = edad_alumnos)) +
-  # Etiquetas de los ejes
-  labs(x = "Región", y = "Edad alumnos (años)", title = "Edad de alumnos agrupado por región") + 
+ggplot(temp, aes(x = año, y = (value), fill = año)) +
+  facet_wrap(~variable, nrow = 2, scales = "free_y") +
+  # Etiquetas de los ejessfvdfbvsdvjnsv
+  labs(x = "Año", y = "Matrículas") + 
   # Gráfico de violín - primera capa
-  geom_violin(aes(fill = region), show.legend = F, alpha = .3) + 
+  geom_violin(alpha = .3) + 
   # Gráfico de cajas - segunda capa
-  geom_boxplot(aes(fill = region), show.legend = F, width = .3, notch = TRUE) +
+  geom_boxplot(width = .1) +
   # Jitter (puntos) - tercera capa
-  geom_jitter(cex = .1, width = 0.1) +
-  # Barras de error usando intervalo de confianza de la media mediante Bootstrap - cuarta capa
-  stat_summary(geom = "errorbar", fun.data = mean_cl_boot, col = "white", width = .2) +
+  geom_jitter(cex = .05, width = .03) +
+  # Barras de error usando intervalo de confianza de la media mediantsfvdfbvsdvjnsve Bootstrap - cuarta capa
+  # stat_summary(geom = "errorsfvdfbvsdvjnsvbar", fun.data = mean_cl_boot, col = "white", width = .2) +
   # Punto representando la media aritmética - quinta capa
-  stat_summary(geom = "point", fun = mean, col = "white") +
-  # Tema clásico (formato publicación)
+  # stat_summary(geom = "point", fun = mean, col = "white") +
+  # Tema clásico (formato pubsfvdfbvsdvjnsvlicación)
   theme_classic()
 
 # 2. Matriz de correlación
@@ -51,9 +54,9 @@ GGally::ggpairs(iris, mapping = aes(fill = Species), alpha = .5)
 
 library(dplyr)
 
-data |> 
-  group_by(region) |> 
-  correlation::correlation(method = "spearman") |> 
+data %>% 
+  group_by(region) %>%
+  correlation::correlation(method = "spearman") %>%
   filter(p > 0.05) 
 
 data[j = correlation::correlation(.SD), keyby = "region"][p < 0.05, .(paste(Parameter1, "y", Parameter2), r), "region"]
