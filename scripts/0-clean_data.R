@@ -20,7 +20,10 @@ data <- fread(
 
 # Transformación / Manipulación ---------------------------------------------------------------
 
-data[, region := factor(region)][]
+data[j = `:=`(
+  region = factor(region),
+  año = factor(año)
+)][]
 
 # Guardamos los datos procesados --------------------------------------------------------------
 
