@@ -43,3 +43,17 @@ ggplot(data, aes(x = region, y = edad_alumnos)) +
   stat_summary(geom = "point", fun = mean, col = "white") +
   # Tema clásico (formato publicación)
   theme_classic()
+
+# 2. Matriz de correlación
+GGally::ggpairs(data, cardinality_threshold = 16)
+
+GGally::ggpairs(iris, mapping = aes(fill = Species), alpha = .5)
+
+library(dplyr)
+
+data |> 
+  group_by(region) |> 
+  correlation::correlation(method = "spearman") |> 
+  filter(p > 0.05) 
+
+data[j = correlation::correlation(.SD), keyby = "region"][p < 0.05, .(paste(Parameter1, "y", Parameter2), r), "region"]
