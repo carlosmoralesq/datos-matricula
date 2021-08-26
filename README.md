@@ -8,6 +8,6 @@ This is the repository with the assignment related to:
 
 The repository is structured this way:
 
-- data: Data used for computations and analysis.
-- scripts: `R` scripts used to import and process data.
-- output: End-user products like reports, figures, tables and others.
+- [data](data): Data used for computations and analysis.
+- [scripts](scripts): `R` scripts used to import and process data.
+- [output](output): End-user products like reports, figures, tables and others.
