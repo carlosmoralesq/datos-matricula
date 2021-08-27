@@ -2,13 +2,12 @@
 
 Trabajo Ciencia del dato
 
-This is the repository with the assignment related to:
+1.	Carga de datos en R:
+ i. Descripción y explicación del script utilizado para cargar los datos como un Dataframe de R.
+ ii. Análisis estadístico exploratorio llevado a cabo en R.
+ iii. Utilización de herramientas gráficas (ggplot2 o similares) para apoyar análisis exploratorio básico.
 
-1. Import data into R
-2. Perform exploratory data analysis
-3. Idem using ggplot for graphical exploratory analysis
+El repositorio está estructura de la siguiente manera:
 
-The repository is structured this way:
-
-- [data](data): Data used for computations and analysis.
-- [scripts](scripts): `R` scripts used to import and process data.
+- [data](data): Datos usados para los análisis computacionales.
+- [scripts](scripts): `R` scripts usados para importar y procesar la data.
