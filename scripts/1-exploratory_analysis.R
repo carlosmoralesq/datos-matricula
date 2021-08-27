@@ -60,21 +60,34 @@ ggplot(temp, aes(x = año, y = value, fill = año)) +
 GGally::ggpairs(data, cardinality_threshold = 16)
 
 # # Matriz de correlación de ejemplo
-GGally::ggpairs(iris, mapping = aes(fill = Species), alpha = .5)
-
+GGally::ggpairs(iris, mapping = aes(col = Species))
 
 # Usando sintaxis de data.table
-data[j = correlation::correlation(.SD), keyby = "region"][p < 0.05, .(paste(Parameter1, "y", Parameter2), r), "region"]
-# Pros: Más rápido, más conciso
-# Contras: Código más complejo
+
+names(data) <- c("Año", "region", "Edad alumnos", "Matrícula Coanil", "Matrícula Pie")
+
+datos_tabla <- data[
+  # Realizamos correlación por pares de variables numéricas usando...
+  j = correlation::correlation(.SD), 
+  # Un 'subset of data' agrupado por región
+  keyby = "region"
+  # Luego filtramos por el valor de prueba de hipótesis
+  ][i = p < 0.05, 
+    j = .(Variable = paste(Parameter1, "y", Parameter2), Correlación = round(r, 3)), 
+    keyby = .(Región = region)]
 
 
-# Usando dplyr - tidyverse
-library(dplyr)
+# Exportar resultados a formato tabla ---------------------------------------------------------
 
-data %>% 
-  group_by(region) %>%
-  correlation::correlation(method = "spearman") %>%
-  filter(p > 0.05) 
-# Pros: Fácil entender (more 'verbose') por su naturaleza secuencial
-# Contra: Lento en casos de datos muy grandes (1 Millon de filas)
+# Instalamos paquetes necesarios
+# install.packages("knitr")
+# install.packages("kableExtra")
+# install.packages("dplyr")
+
+library(dplyr) # Para poder usar el 'pipe operator' (%>%)
+
+datos_tabla %>%
+  knitr::kable() %>%
+  kableExtra::kable_paper() %>%
+  kableExtra::kable_styling(full_width = FALSE, 
+                            bootstrap_options = "condensed")
