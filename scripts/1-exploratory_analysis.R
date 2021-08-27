@@ -50,8 +50,6 @@ ggplot(temp, aes(x = año, y = value, fill = año)) +
   # Tema clásico (formato publicación)
   theme_classic()
 
-
-
 # Correlaciones -------------------------------------------------------------------------------
 
 
