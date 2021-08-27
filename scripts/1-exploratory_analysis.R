@@ -49,14 +49,20 @@ ggplot(temp, aes(x = año, y = (value), fill = año)) +
   # Tema clásico (formato publicación)
   theme_classic()
 
+
+
+# Correlaciones -------------------------------------------------------------------------------
+
+
+# Si no se ha hecho, primero instalar paquetes de Correlación
+# install.packages("GGally")
+# install.packages("correlation")
 # 2. Matriz de correlación
 GGally::ggpairs(data, cardinality_threshold = 16)
 
 # # Matriz de correlación de ejemplo
 GGally::ggpairs(iris, mapping = aes(fill = Species), alpha = .5)
 
-
-# Correlaciones -------------------------------------------------------------------------------
 
 # Usando sintaxis de data.table
 data[j = correlation::correlation(.SD), keyby = "region"][p < 0.05, .(paste(Parameter1, "y", Parameter2), r), "region"]
