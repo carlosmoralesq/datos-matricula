@@ -2,7 +2,7 @@
 
 # Integrar GitHub con RStudio
 ## 1. Descargar Git
-### http://git-scm.com/downloads
+### http://git-scm.com/downloads -> instalar
 ## 2. Tools -> Global Options -> Git/SVN -> Some magic
 ## 3. Copiar y pegar en la terminal
 ### git config --global user.email "example@mail.com"
