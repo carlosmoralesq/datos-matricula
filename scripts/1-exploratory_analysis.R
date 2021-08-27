@@ -29,13 +29,14 @@ plot(data) # Graficamos los datos con 'base R'
 
 # Exploración gráfica con ggplot2 -------------------------------------------------------------
 
-temp <- melt(data, measure.vars = c("matricula_coanil", "matricula_pie")) 
+temp <- melt(data, measure.vars = c("matricula_coanil", "matricula_pie")
+             )[j = variable := `levels<-`(variable, c("Coanil", "Pie"))][]
 
-# 1. Distribución de la edad de los alumnos agrupado por región
-ggplot(temp, aes(x = año, y = (value), fill = año)) +
+# 1. Distribución de la cantidad de matrícula de los alumnos agrupado por región
+ggplot(temp, aes(x = año, y = value, fill = año)) +
   facet_wrap(~variable, nrow = 2, scales = "free_y", ) +
   # Etiquetas de los ejes
-  labs(x = "Año", y = "Matrículas") + 
+  labs(x = "Año", y = "Matrículas", fill = "Año") + 
   # Gráfico de violín - primera capa
   geom_violin(alpha = .3) + 
   # Gráfico de cajas - segunda capa
