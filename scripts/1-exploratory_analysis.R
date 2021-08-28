@@ -76,12 +76,20 @@ figure.2 <- ggplot(temp, aes(x = año, y = value, fill = año)) +
 
 pdf("output/figura-2.pdf", width = 10); print(figure.2); dev.off()
 
+# 1. Distribución de la cantidad de matrícula de los alumnos agrupado por región
+figure.4 <- ggplot(temp, aes(x = edad_alumnos, y = value, col = region)) +
+  facet_grid(cols = vars(año), rows = vars(variable), scales = "free") +
+  geom_line() +
+  theme_classic()
+
+pdf("output/figura-4.pdf", width = 10); print(figure.4); dev.off()
+
 # Correlaciones -------------------------------------------------------------------------------
 
 # 2. Matriz de correlación
 GGally::ggpairs(data, cardinality_threshold = 16)
 
-pdf("output/figura-3.pdf",width = 15, height = 15); GGally::ggpairs(data, cardinality_threshold = 16); dev.off()
+pdf("output/figura-3.pdf",width = 40, height = 40); GGally::ggpairs(data, cardinality_threshold = 16); dev.off()
 
 # Usando sintaxis de data.table
 
