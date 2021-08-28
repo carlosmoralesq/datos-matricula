@@ -1,16 +1,38 @@
 
 # Preparamos espacio de trabajo ---------------------------------------------------------------
 
+pkgs <- function(installed, needed) {
+  if (any(!needed %in% installed)) {
+    missing_pkgs <- needed[!needed %in% installed]
+    message("Faltan los siguientes paquetes: ", paste(missing_pkgs, collapse = ", "))
+    install.packages(missing_pkgs, verbose = FALSE, quiet = TRUE)
+    message("Todo listo!")
+  } else {
+    message("No falta ningún paquete")
+  }
+}
+pkg_instalados <- .packages(T) 
+pkg_necesarios <- c("data.table",  # Computación rápdia
+                    "ggplot2",     # Exploración gráfica
+                    "GGally",      # Matriz de correlaciones
+                    "magrittr",    # Pipe operator 
+                    "knitr",       # Para la fabricación de tablas
+                    "kableExtra",  # Para la personalización de tablas
+                    "webshot",     # Para transformar archivos HTML en PDF
+                    "correlation") # Correlaciones en formato largo
+
 # Instalamos paquetes (si no están en el sistema)
-# install.packages("data.table")
-# install.packages("ggplot2")
-# install.packages("GGally")
-# install.packages("dplyr")
-# install.packages("correlation")
+pkgs(installed = pkg_instalados, needed = pkg_necesarios)
 
 # Cargamos paquetes
 library(data.table)
 library(ggplot2)
+library(GGally)
+library(correlation)
+library(magrittr)
+library(knitr)
+library(kableExtra)
+library(webshot)
 
 # Importamos los datos
 data <- readRDS(file = "data/data.RDS")
@@ -18,11 +40,13 @@ data <- readRDS(file = "data/data.RDS")
 
 # Estadísticos descriptivos -------------------------------------------------------------------
 
-resultados <- summary(data) # Descriptivos básicos por variable
+descriptivos <- summary(data) # Descriptivos básicos por variable
 
 # # Con la función 'summary' obtenemos estadísticos descriptivos basados posición (cuartiles), así como la media aritmética (sólo cuando el primer argumento es un data.frame).
 
 plot(data) # Graficamos los datos con 'base R'
+
+pdf("output/figura-1.pdf"); plot(data); dev.off()
 
 # # Con la función 'plot' generamos una matriz de gráficos de dispersión. Ideal para la exploración rápida de data.frames 
 
@@ -33,7 +57,7 @@ temp <- melt(data, measure.vars = c("matricula_coanil", "matricula_pie")
              )[j = variable := `levels<-`(variable, c("Coanil", "Pie"))][]
 
 # 1. Distribución de la cantidad de matrícula de los alumnos agrupado por región
-ggplot(temp, aes(x = año, y = value, fill = año)) +
+figure.2 <- ggplot(temp, aes(x = año, y = value, fill = año)) +
   facet_wrap(~variable, nrow = 2, scales = "free_y", ) +
   # Etiquetas de los ejes
   labs(x = "Año", y = "Matrículas", fill = "Año") + 
@@ -50,17 +74,14 @@ ggplot(temp, aes(x = año, y = value, fill = año)) +
   # Tema clásico (formato publicación)
   theme_classic()
 
+pdf("output/figura-2.pdf", width = 10); print(figure.2); dev.off()
+
 # Correlaciones -------------------------------------------------------------------------------
 
-
-# Si no se ha hecho, primero instalar paquetes de Correlación
-# install.packages("GGally")
-# install.packages("correlation")
 # 2. Matriz de correlación
 GGally::ggpairs(data, cardinality_threshold = 16)
 
-# # Matriz de correlación de ejemplo
-GGally::ggpairs(iris, mapping = aes(col = Species))
+pdf("output/figura-3.pdf",width = 15, height = 15); GGally::ggpairs(data, cardinality_threshold = 16); dev.off()
 
 # Usando sintaxis de data.table
 
@@ -73,21 +94,19 @@ datos_tabla <- data[
   keyby = "region"
   # Luego filtramos por el valor de prueba de hipótesis
   ][i = p < 0.05, 
-    j = .(Variable = paste(Parameter1, "y", Parameter2), Correlación = round(r, 3)), 
+    j = .(Variable = paste(Parameter1, "y", Parameter2), "Correlación (r)" = round(r, 3)), 
     keyby = .(Región = region)]
-
 
 # Exportar resultados a formato tabla ---------------------------------------------------------
 
-# Instalamos paquetes necesarios
-# install.packages("knitr")
-# install.packages("kableExtra")
-# install.packages("dplyr")
-
-library(dplyr) # Para poder usar el 'pipe operator' (%>%)
-
 datos_tabla %>%
-  knitr::kable() %>%
-  kableExtra::kable_paper() %>%
-  kableExtra::kable_styling(full_width = FALSE, 
-                            bootstrap_options = "condensed")
+  knitr::kable("html") %>%
+  kableExtra::kable_styling(
+  html_font = "Times",
+  bootstrap_options = "condensed", 
+  full_width = FALSE) %>%
+  kableExtra::save_kable("output/tabla-1.html")
+
+webshot::webshot(url = "output/tabla-1.html", 
+  file = "output/tabla-1.pdf", 
+  zoom = 1)
