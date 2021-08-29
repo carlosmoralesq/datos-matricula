@@ -20,13 +20,14 @@ pkg_necesarios <- c("data.table",  # Computación rápdia
                     "knitr",       # Para la fabricación de tablas
                     "kableExtra",  # Para la personalización de tablas
                     "webshot",     # Para transformar archivos HTML en PDF
+                    "remotes",
                     "correlation") # Correlaciones en formato largo
-
-# Paquete necesario para estadísticos descriptivos
-if(!"writR" %in% pkg_instalados) remotes::install_github("matcasti/writR")
 
 # Instalamos paquetes (si no están en el sistema)
 pkgs(installed = pkg_instalados, needed = pkg_necesarios)
+
+# Paquete necesario para estadísticos descriptivos
+if(!"writR" %in% pkg_instalados) remotes::install_github("matcasti/writR")
 
 # Cargamos paquetes - necesarios
 library(data.table)
