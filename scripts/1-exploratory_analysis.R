@@ -46,7 +46,7 @@ descriptivos <- summary(data) # Descriptivos básicos por variable
 
 plot(data) # Graficamos los datos con 'base R'
 
-pdf("output/figura-1.pdf"); plot(data); dev.off()
+# pdf("output/figura-1.pdf"); plot(data); dev.off()
 
 # # Con la función 'plot' generamos una matriz de gráficos de dispersión. Ideal para la exploración rápida de data.frames 
 
@@ -74,7 +74,7 @@ figure.2 <- ggplot(temp, aes(x = año, y = value, fill = año)) +
   # Tema clásico (formato publicación)
   theme_classic()
 
-pdf("output/figura-2.pdf", width = 10); print(figure.2); dev.off()
+# pdf("output/figura-2.pdf", width = 10); print(figure.2); dev.off()
 
 # 1. Distribución de la cantidad de matrícula de los alumnos agrupado por región
 figure.4 <- ggplot(temp, aes(x = edad_alumnos, y = value, col = region)) +
@@ -82,7 +82,85 @@ figure.4 <- ggplot(temp, aes(x = edad_alumnos, y = value, col = region)) +
   geom_line() +
   theme_classic()
 
-pdf("output/figura-4.pdf", width = 10); print(figure.4); dev.off()
+# pdf("output/figura-4.pdf", width = 10); print(figure.4); dev.off()
+
+
+# Variacion por año ---------------------------------------------------------------------------
+
+# Datos de la tabla
+tabla_2 <- data[
+  # Calcular la media de cada matrícula
+  j = list(pie = mean(matricula_pie), coanil = mean(matricula_coanil)),
+  # Agrupar por region y año
+  keyby = .(region, año)][
+    # Asignar una columna a cada año
+    j = dcast(.SD, region ~ año, value.var = c("pie", "coanil"))
+     ][
+       # Porcentaje de variación entre pares de años consecutivos
+       j = list(
+         `2017 a 2018` = paste0(round((pie_2018/pie_2017 - 1)*100, 1), "%")
+         , `2018 a 2019` = paste0(round((pie_2019/pie_2018 - 1)*100, 1), "%")
+         , `2019 a 2020` = paste0(round((pie_2020/pie_2019 - 1)*100, 1), "%")
+         , `2017 a 2018` = paste0(round((coanil_2018/coanil_2017 - 1)*100, 1), "%")
+         , `2018 a 2019` = paste0(round((coanil_2019/coanil_2018 - 1)*100, 1), "%")
+         , `2019 a 2020` = paste0(round((coanil_2020/coanil_2019 - 1)*100, 1), "%")
+         ),
+       # Agrupar nuevamente por región
+       keyby = list(Región = region)
+     ]
+
+# Con los datos de la tabla creados
+tabla_2 %>%
+  # Creamos una tabla en HTML
+  knitr::kable() %>%
+  # Le asignamos un header con matricula Pie y Coanil
+  kableExtra::add_header_above(c(" " = 1, "Pie" = 3, "Coanil" = 3)) %>%
+  # Creamos otro header englobando los demás
+  kableExtra::add_header_above(c(" " = 1, "Variación de matrículas" = 6)) %>%
+  # Le asignamos un tema (propósitos estéticos)
+  kableExtra::kable_paper() %>%
+  kableExtra::save_kable(file = "output/tabla-2.html")
+
+webshot::webshot(url = "output/tabla-2.html", 
+  file = "output/tabla-2.pdf", 
+  zoom = 1)
+
+figura_5 <- temp[j = list(Matrícula = sum(value)), by = .(variable, año)] %>%
+ggplot(aes(x = año, y = Matrícula)) +
+  facet_grid(rows = vars(variable), scales = "free_y") +
+  geom_point() +
+  geom_line(aes(group = 1)) +
+  geom_smooth(aes(group = 1), method = "lm", lwd = 0.5) +
+  theme_classic()
+  # stat_summary(geom = "errorbar", fun.data = mean_sdl, aes(group = 1), width = 0.2)
+  
+pdf(file = "output/figura-5.pdf"); figura_5; dev.off()
+
+# Datos de la tabla
+datos_figura.3 <- data[
+  # Calcular la media de cada matrícula
+  j = list(pie = mean(matricula_pie), coanil = mean(matricula_coanil)),
+  # Agrupar por region y año
+  keyby = .(año)][
+    # Asignar una columna a cada año
+    j = dcast(.SD, . ~ año, value.var = c("pie", "coanil"))
+     ][
+       # Porcentaje de variación entre pares de años consecutivos
+       j = list(
+         `pie_2018_2017` = round((pie_2018/pie_2017 - 1)*100, 1)
+         , `pie_2019_2018` = round((pie_2019/pie_2018 - 1)*100, 1)
+         , `pie_2020_2019` = round((pie_2020/pie_2019 - 1)*100, 1)
+         , `coanil_2018_2017` = round((coanil_2018/coanil_2017 - 1)*100, 1)
+         , `coanil_2019_2018` = round((coanil_2019/coanil_2018 - 1)*100, 1)
+         , `coanil_2020_2019` = round((coanil_2020/coanil_2019 - 1)*100, 1)
+         ),
+       # Agrupar nuevamente por región
+       # keyby = list(Región = region)
+     ][j = melt(.SD)
+       ][j = sentido := fifelse(value > 0, "Incremento", "Decremento")][]
+  
+ggplot(datos_figura.3, aes(x = variable, y = value, fill = sentido)) +
+  geom_col()
 
 # Correlaciones -------------------------------------------------------------------------------
 
