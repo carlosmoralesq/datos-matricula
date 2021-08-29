@@ -13,8 +13,6 @@ pkgs <- function(installed, needed) {
 }
 pkg_instalados <- .packages(T) 
 pkg_necesarios <- c("data.table",  # Computación rápdia
-                    "ggplot2",     # Exploración gráfica
-                    "GGally",      # Matriz de correlaciones
                     "magrittr",    # Pipe operator 
                     "gtsummary",   # Fabricación de tablas con descriptivos
                     "knitr",       # Para la fabricación de tablas
@@ -35,11 +33,11 @@ library(magrittr)
 library(gtsummary)
 
 # Opcional cargarlos - llamamos funciones mediante `Namespacing` (i.e. paquete::funcion)
-# library(GGally)
 # library(correlation)
 # library(knitr)
 # library(kableExtra)
 # library(webshot)
+
 
 # Importamos los datos
 data <- readRDS(file = "data/data.RDS")
@@ -59,7 +57,7 @@ gtsummary::theme_gtsummary_language("es")
 ## Tabla 1. Descriptivos generales usando el paquete gtsummary agrupado por año ----
 
 # Usando los datos, excluyento región...
-data[j = -c("region")] %>%  
+tab1 <- data[j = -c("region")] %>%  
   # Hacemos una tabla resumen
   gtsummary::tbl_summary(
     # Agrupando por año
@@ -78,9 +76,12 @@ data[j = -c("region")] %>%
     )
   )
 
+gtsummary::as_gt(tab1) %>%
+  gt::gtsave("output/table-1.pdf", zoom = 1)
+
 ## Tabla 2. Correlaciones significativas (p < 0.05) por pares de variables agrupadas por región ----
 
-`names<-`(data, c("Año", "region", "Edad alumnos", "Matrícula Coanil", "Matrícula Pie"))[
+tab2 <- `names<-`(data, c("Año", "region", "Edad alumnos", "Matrícula Coanil", "Matrícula Pie"))[
   # Realizamos correlación por pares de variables numéricas usando...
   j = correlation::correlation(.SD), 
   # Un 'subset of data' agrupado por región
@@ -91,12 +92,23 @@ data[j = -c("region")] %>%
       Variable = paste(Parameter1, "y", Parameter2), 
       "Correlación (r)" = round(r, 3)
     ), 
-    keyby = .(Región = region)]
+    keyby = .(Región = region)] %>%
+  knitr::kable("html") %>%
+  kableExtra::kable_styling(
+  bootstrap_options = "condensed", 
+  full_width = FALSE)
+
+kableExtra::save_kable(tab2, file = "output/table-2.html")
+webshot::webshot(
+  url = "output/table-2.html",
+  file = "output/table-2.pdf",
+  zoom = 1
+)
 
 ## Tabla 3. Variaciones porcentuales de matricula Pie y Coanil agrupados por región entre 2017 al 2020. ----
 
 # Datos de la tabla
-data[
+tab3 <- data[
   # Calcular la media de cada matrícula
   j = list(pie = mean(matricula_pie), coanil = mean(matricula_coanil)),
   # Agrupar por region y año
@@ -113,11 +125,26 @@ data[
          , `2019 a 2020` = paste0(round((coanil_2020/coanil_2019 - 1)*100, 1), "%")
          ),
        # Agrupar nuevamente por región
-       keyby = list(Región = region)]
+       keyby = list(Región = region)] %>%
+  # Creamos una tabla en HTML
+  knitr::kable() %>%
+  # Le asignamos un header con matricula Pie y Coanil
+  kableExtra::add_header_above(c(" " = 1, "Pie" = 3, "Coanil" = 3)) %>%
+  # Creamos otro header englobando los demás
+  kableExtra::add_header_above(c(" " = 1, "Variación de matrículas" = 6)) %>%
+  # Le asignamos un tema (propósitos estéticos)
+  kableExtra::kable_styling(bootstrap_options = "condensed")
+
+kableExtra::save_kable(tab3, file = "output/table-3.html")
+webshot::webshot(
+  url = "output/table-3.html",
+  file = "output/table-3.pdf",
+  zoom = 1
+)
 
 ## Tabla 4. Estadísticos de estimación de centralidad y dispersión de las variaciones porcentuales de matrícula Pie y Coanil agrupados por región entre 2017 al 2020. ----
 
-data[
+tab4 <- data[
   # Calcular la media de cada matrícula
   j = list(pie = sum(matricula_pie), coanil = sum(matricula_coanil)),
   # Agrupar por region y año
@@ -141,4 +168,15 @@ data[
          `Mediana (RIQ)` = writR::cent_disp(value, str.a = "{median} ({IQR})"),
          `[Rango]` = writR::cent_disp(value, str.a = "[{min}, {max}]")
        ), by = list(variable)
-       ][j = transpose(.SD, keep.names = "Estadísticos", make.names = "variable")]
+       ][j = transpose(.SD, keep.names = "Estadísticos", make.names = "variable")] %>%
+  `colnames<-`(c("Estadísticos", rep(x = c("2017 a 2018", "2018 a 2019", "2019 a 2020"), 2))) %>%
+  knitr::kable() %>%
+  kableExtra::add_header_above(header = c(" " = 1, "Pie" = 3, "Coanil" = 3)) %>%
+  kableExtra::kable_styling(bootstrap_options = "condensed")
+
+kableExtra::save_kable(tab4, file = "output/table-4.html")
+webshot::webshot(
+  url = "output/table-4.html",
+  file = "output/table-4.pdf",
+  zoom = 1
+)
